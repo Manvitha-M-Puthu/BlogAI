@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   SparklesIcon,
   PhotoIcon,
@@ -9,11 +7,23 @@ import {
   EyeIcon,
   DocumentTextIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  ClockIcon,
+  TagIcon,
+  BookOpenIcon,
+  CameraIcon,
+  StarIcon,
+  LockClosedIcon
 } from '@heroicons/react/24/outline';
 
 const BlogPage = () => {
-  const { user } = useAuth();
+  // Mock user data - replace with useAuth hook
+  const [user] = useState({ 
+    isSubscriber: true, // Change to false to test non-subscriber view
+    name: "John Doe",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
+  });
+
   const [blogContent, setBlogContent] = useState({
     title: '',
     content: '',
@@ -42,12 +52,12 @@ const BlogPage = () => {
 
   const handleEnhanceWithAI = async () => {
     if (!user?.isSubscriber) {
-      toast.error('AI Enhancement is only available for subscribers!');
+      alert('AI Enhancement is only available for subscribers!');
       return;
     }
 
     if (!blogContent.content.trim()) {
-      toast.error('Please write some content first!');
+      alert('Please write some content first!');
       return;
     }
 
@@ -92,9 +102,9 @@ const BlogPage = () => {
         content: enhancedContent
       }));
 
-      toast.success('Content enhanced with AI! ✨');
+      alert('Content enhanced with AI! ✨');
     } catch (error) {
-      toast.error('Failed to enhance content. Please try again.');
+      alert('Failed to enhance content. Please try again.');
     } finally {
       setIsEnhancing(false);
     }
@@ -104,14 +114,14 @@ const BlogPage = () => {
     e.preventDefault();
     
     if (!blogContent.title.trim() || !blogContent.content.trim()) {
-      toast.error('Please fill in both title and content!');
+      alert('Please fill in both title and content!');
       return;
     }
 
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success('Blog post published successfully! 🎉');
+      alert('Blog post published successfully! 🎉');
       
       // Reset form
       setBlogContent({
@@ -121,69 +131,132 @@ const BlogPage = () => {
         category: 'Technology'
       });
     } catch (error) {
-      toast.error('Failed to publish blog post.');
+      alert('Failed to publish blog post.');
     }
   };
 
   const wordCount = blogContent.content.split(/\s+/).filter(word => word.length > 0).length;
   const estimatedReadTime = Math.max(1, Math.ceil(wordCount / 200));
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Blog Post</h1>
-          <p className="text-gray-600">Share your thoughts with the world</p>
-        </div>
+  // For non-subscribers, only show first 10 lines
+  const displayContent = user?.isSubscriber 
+    ? blogContent.content 
+    : blogContent.content.split('\n').slice(0, 10).join('\n');
 
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header with gradient background */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-8">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-white"
+            >
+              <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                Create Your Masterpiece
+              </h1>
+              <p className="text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
+                Transform your ideas into compelling stories with AI-powered assistance
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Editor */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Title */}
-              <div className="card">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Blog Title
-                </label>
+            <motion.form 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onSubmit={handleSubmit} 
+              className="space-y-8"
+            >
+              {/* Title Section */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                    <BookOpenIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <label className="text-lg font-semibold text-gray-800">
+                    Blog Title
+                  </label>
+                </div>
                 <input
                   type="text"
                   value={blogContent.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder="Enter an engaging title for your blog post..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg"
+                  placeholder="Enter an engaging title that captures your reader's attention..."
+                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 text-lg font-medium placeholder:text-gray-400"
                 />
               </div>
 
               {/* Content Editor */}
-              <div className="card">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Content
-                  </label>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>{wordCount} words</span>
-                    <span>{estimatedReadTime} min read</span>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
+                      <DocumentTextIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <label className="text-lg font-semibold text-gray-800">
+                      Content
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-6 text-sm">
+                    <div className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-full">
+                      <ClockIcon className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium text-gray-600">{wordCount} words</span>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-indigo-50 px-3 py-2 rounded-full">
+                      <EyeIcon className="w-4 h-4 text-indigo-500" />
+                      <span className="font-medium text-indigo-600">{estimatedReadTime} min read</span>
+                    </div>
                   </div>
                 </div>
-                <textarea
-                  value={blogContent.content}
-                  onChange={(e) => handleInputChange('content', e.target.value)}
-                  placeholder="Start writing your amazing blog post here..."
-                  rows={15}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-                />
+                
+                <div className="relative">
+                  <textarea
+                    value={blogContent.content}
+                    onChange={(e) => handleInputChange('content', e.target.value)}
+                    placeholder="Start crafting your amazing story here... Let your creativity flow!"
+                    rows={18}
+                    className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 resize-none placeholder:text-gray-400 leading-relaxed"
+                  />
+                  
+                  {/* Blur overlay for non-subscribers */}
+                  {!user?.isSubscriber && blogContent.content && (
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/95 backdrop-blur-sm rounded-xl flex items-end justify-center pb-8">
+                      <div className="text-center bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                        <LockClosedIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">Premium Feature</h3>
+                        <p className="text-gray-600 mb-4">Upgrade to access full content editing</p>
+                        <button className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-200">
+                          Upgrade Now
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Meta Information */}
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="card">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
+                      <TagIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <label className="text-lg font-semibold text-gray-800">
+                      Category
+                    </label>
+                  </div>
                   <select
                     value={blogContent.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 transition-all duration-200 bg-white"
                   >
                     {categories.map(category => (
                       <option key={category} value={category}>
@@ -193,215 +266,291 @@ const BlogPage = () => {
                   </select>
                 </div>
 
-                <div className="card">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tags (comma separated)
-                  </label>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
+                      <TagIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <label className="text-lg font-semibold text-gray-800">
+                      Tags
+                    </label>
+                  </div>
                   <input
                     type="text"
                     value={blogContent.tags}
                     onChange={(e) => handleInputChange('tags', e.target.value)}
-                    placeholder="e.g., AI, Technology, Future"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="e.g., AI, Technology, Future, Innovation"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-100 focus:border-orange-500 transition-all duration-200 placeholder:text-gray-400"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => setShowPreview(!showPreview)}
-                  className="btn-secondary flex items-center justify-center space-x-2"
+                  className="flex items-center justify-center space-x-3 px-6 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
                 >
                   <EyeIcon className="w-5 h-5" />
-                  <span>{showPreview ? 'Hide Preview' : 'Preview'}</span>
-                </button>
+                  <span>{showPreview ? 'Hide Preview' : 'Preview Article'}</span>
+                </motion.button>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
-                  className="btn-primary flex items-center justify-center space-x-2 flex-1"
+                  className="flex items-center justify-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex-1"
                 >
                   <DocumentTextIcon className="w-5 h-5" />
                   <span>Publish Blog Post</span>
-                </button>
+                </motion.button>
               </div>
-            </form>
+            </motion.form>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Enhanced Sidebar */}
+          <div className="space-y-8">
             {/* AI Enhancement Panel */}
-            <div className="card">
-              <div className="flex items-center space-x-2 mb-4">
-                <SparklesIcon className="w-5 h-5 text-primary-600" />
-                <h3 className="text-lg font-semibold text-gray-900">AI Enhancement</h3>
-                {!user?.isSubscriber && (
-                  <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
-                    PRO Only
-                  </span>
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
+            >
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
+                <div className="flex items-center space-x-3">
+                  <SparklesIcon className="w-6 h-6 text-white" />
+                  <h3 className="text-xl font-bold text-white">AI Enhancement</h3>
+                  {!user?.isSubscriber && (
+                    <span className="px-3 py-1 text-xs bg-yellow-400 text-yellow-900 rounded-full font-bold">
+                      PRO ONLY
+                    </span>
+                  )}
+                </div>
+                <p className="text-indigo-100 mt-2">
+                  Transform your writing with intelligent AI assistance
+                </p>
+              </div>
+
+              <div className="p-6">
+                {user?.isSubscriber ? (
+                  <div className="space-y-6">
+                    {/* Enhancement Options */}
+                    <div className="space-y-4">
+                      <motion.label 
+                        whileHover={{ scale: 1.02 }}
+                        className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 cursor-pointer hover:from-green-100 hover:to-emerald-100 transition-all duration-200"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={enhancementOptions.grammar}
+                          onChange={(e) => setEnhancementOptions(prev => ({
+                            ...prev,
+                            grammar: e.target.checked
+                          }))}
+                          className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                        />
+                        <div className="flex items-center space-x-3 flex-1">
+                          <CheckCircleIcon className="w-6 h-6 text-green-500" />
+                          <div>
+                            <span className="font-medium text-gray-800">Grammar & Style</span>
+                            <p className="text-sm text-gray-600">Fix errors and improve flow</p>
+                          </div>
+                        </div>
+                      </motion.label>
+
+                      <motion.label 
+                        whileHover={{ scale: 1.02 }}
+                        className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 cursor-pointer hover:from-blue-100 hover:to-cyan-100 transition-all duration-200"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={enhancementOptions.photos}
+                          onChange={(e) => setEnhancementOptions(prev => ({
+                            ...prev,
+                            photos: e.target.checked
+                          }))}
+                          className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <div className="flex items-center space-x-3 flex-1">
+                          <CameraIcon className="w-6 h-6 text-blue-500" />
+                          <div>
+                            <span className="font-medium text-gray-800">Smart Images</span>
+                            <p className="text-sm text-gray-600">Add relevant visuals</p>
+                          </div>
+                        </div>
+                      </motion.label>
+
+                      <motion.label 
+                        whileHover={{ scale: 1.02 }}
+                        className="flex items-center space-x-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all duration-200"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={enhancementOptions.quotes}
+                          onChange={(e) => setEnhancementOptions(prev => ({
+                            ...prev,
+                            quotes: e.target.checked
+                          }))}
+                          className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                        />
+                        <div className="flex items-center space-x-3 flex-1">
+                          {/* <QuoteIcon className="w-6 h-6 text-purple-500" /> */}
+                          <div>
+                            <span className="font-medium text-gray-800">Inspiring Quotes</span>
+                            <p className="text-sm text-gray-600">Add motivational content</p>
+                          </div>
+                        </div>
+                      </motion.label>
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleEnhanceWithAI}
+                      disabled={isEnhancing}
+                      className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-4 rounded-xl font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      {isEnhancing ? (
+                        <div className="flex items-center justify-center space-x-3">
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Enhancing Magic...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center space-x-3">
+                          <SparklesIcon className="w-5 h-5" />
+                          <span>Enhance with AI</span>
+                        </div>
+                      )}
+                    </motion.button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="bg-gradient-to-br from-gray-100 to-gray-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <LockClosedIcon className="w-8 h-8 text-gray-500" />
+                    </div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Premium Feature</h4>
+                    <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+                      Unlock AI-powered enhancements to transform your writing with intelligent grammar correction, smart image suggestions, and inspiring quotes.
+                    </p>
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <StarIcon className="w-4 h-4" />
+                        <span>Upgrade to Pro</span>
+                      </div>
+                    </motion.button>
+                  </div>
                 )}
               </div>
+            </motion.div>
 
-              {user?.isSubscriber ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Enhance your blog with AI-powered improvements
-                  </p>
-
-                  {/* Enhancement Options */}
-                  <div className="space-y-3">
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={enhancementOptions.grammar}
-                        onChange={(e) => setEnhancementOptions(prev => ({
-                          ...prev,
-                          grammar: e.target.checked
-                        }))}
-                        className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-                      />
-                      <span className="text-sm text-gray-700 flex items-center space-x-2">
-                        <CheckCircleIcon className="w-4 h-4 text-green-500" />
-                        <span>Grammar & Style Corrections</span>
-                      </span>
-                    </label>
-
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={enhancementOptions.photos}
-                        onChange={(e) => setEnhancementOptions(prev => ({
-                          ...prev,
-                          photos: e.target.checked
-                        }))}
-                        className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-                      />
-                      <span className="text-sm text-gray-700 flex items-center space-x-2">
-                        <PhotoIcon className="w-4 h-4 text-blue-500" />
-                        <span>Add Relevant Images</span>
-                      </span>
-                    </label>
-
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={enhancementOptions.quotes}
-                        onChange={(e) => setEnhancementOptions(prev => ({
-                          ...prev,
-                          quotes: e.target.checked
-                        }))}
-                        className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-                      />
-                      <span className="text-sm text-gray-700 flex items-center space-x-2">
-                        <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-purple-500" />
-                        <span>Inspirational Quotes</span>
-                      </span>
-                    </label>
-                  </div>
-
-                  <button
-                    onClick={handleEnhanceWithAI}
-                    disabled={isEnhancing}
-                    className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isEnhancing ? (
-                      <div className="flex items-center justify-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Enhancing...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <SparklesIcon className="w-5 h-5" />
-                        <span>Enhance with AI</span>
-                      </div>
-                    )}
-                  </button>
+            {/* Enhanced Writing Tips */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300"
+            >
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg">
+                  <BookOpenIcon className="w-5 h-5 text-white" />
                 </div>
-              ) : (
-                <div className="text-center py-6">
-                  <XCircleIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 mb-4">
-                    AI Enhancement features are available for subscribers only
-                  </p>
-                  <button className="btn-primary">
-                    Upgrade to Pro
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Writing Tips */}
-            <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Writing Tips</h3>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-primary-600 rounded-full mt-2"></div>
-                  <p className="text-sm text-gray-600">
-                    Start with a compelling hook to grab readers' attention
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-primary-600 rounded-full mt-2"></div>
-                  <p className="text-sm text-gray-600">
-                    Use subheadings to break up long content
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-primary-600 rounded-full mt-2"></div>
-                  <p className="text-sm text-gray-600">
-                    Include relevant examples and personal experiences
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-primary-600 rounded-full mt-2"></div>
-                  <p className="text-sm text-gray-600">
-                    End with a clear call-to-action or conclusion
-                  </p>
-                </div>
+                <h3 className="text-xl font-bold text-gray-800">Writing Tips</h3>
               </div>
-            </div>
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: SparklesIcon,
+                    tip: "Start with a compelling hook to grab readers' attention immediately",
+                    color: "from-blue-500 to-indigo-600"
+                  },
+                  {
+                    icon: DocumentTextIcon,
+                    tip: "Use subheadings and short paragraphs for better readability",
+                    color: "from-green-500 to-emerald-600"
+                  },
+                  {
+                    icon: ChatBubbleBottomCenterTextIcon,
+                    tip: "Include personal experiences and relatable examples",
+                    color: "from-purple-500 to-pink-600"
+                  },
+                  {
+                    icon: CheckCircleIcon,
+                    tip: "End with a clear call-to-action or thought-provoking conclusion",
+                    color: "from-orange-500 to-red-600"
+                  }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className="flex items-start space-x-4 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <div className={`p-2 bg-gradient-to-r ${item.color} rounded-lg flex-shrink-0`}>
+                      <item.icon className="w-4 h-4 text-white" />
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {item.tip}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Preview Modal */}
-        {showPreview && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-            onClick={() => setShowPreview(false)}
-          >
+        {/* Enhanced Preview Modal */}
+        <AnimatePresence>
+          {showPreview && (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-xl max-w-4xl w-full max-h-[80vh] overflow-auto"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              onClick={() => setShowPreview(false)}
             >
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-gray-900">Preview</h2>
-                  <button
-                    onClick={() => setShowPreview(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <XCircleIcon className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-              <div className="p-6">
-                <article className="prose prose-lg max-w-none">
-                  <h1>{blogContent.title || 'Untitled Blog Post'}</h1>
-                  <div className="whitespace-pre-wrap">
-                    {blogContent.content || 'No content yet...'}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="bg-white rounded-2xl max-w-5xl w-full max-h-[85vh] overflow-hidden shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-white">Article Preview</h2>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setShowPreview(false)}
+                      className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      <XCircleIcon className="w-6 h-6 text-white" />
+                    </motion.button>
                   </div>
-                </article>
-              </div>
+                </div>
+                <div className="p-8 overflow-auto max-h-[calc(85vh-120px)]">
+                  <article className="prose prose-lg max-w-none">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-6">
+                      {blogContent.title || 'Untitled Blog Post'}
+                    </h1>
+                    <div className="prose-content whitespace-pre-wrap text-gray-700 leading-relaxed">
+                      {displayContent || 'No content yet...'}
+                    </div>
+                  </article>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
